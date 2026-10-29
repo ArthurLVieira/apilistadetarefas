@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
 public class Priority {
 
     @Id
-    @Column(name = "priority_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @Column(nullable = false, unique = true)

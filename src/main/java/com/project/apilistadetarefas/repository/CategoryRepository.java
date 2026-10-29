@@ -1,4 +1,4 @@
-package com.project.apilistadetarefas.repositor;
+package com.project.apilistadetarefas.repository;
 
 import com.project.apilistadetarefas.entity.Category;
 import org.springframework.data.jpa.repository.JpaRepository;

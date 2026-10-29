@@ -1,6 +1,6 @@
 package com.project.apilistadetarefas.service;
 
-import com.project.apilistadetarefas.repositor.CategoryRepository;
+import com.project.apilistadetarefas.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

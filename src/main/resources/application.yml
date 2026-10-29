@@ -6,4 +6,21 @@ spring:
     name: apilistadetarefas
   profiles:
     active: conn
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${}
+            client-secret: ${}
+            scope:
+              - email
+              - profile
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
 
+app:
+  jwt:
+    secret: ${8a815f8e69e08645781f0f4579fe58750d3551b238385bb1e558b9d46cd33831}
+    expiration-ms: 86400000
+  oauth2:
+    redirect-uri: http://localhost:3000/oauth2/redirect
