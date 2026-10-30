@@ -43,7 +43,7 @@ public class User implements Serializable {
     @Enumerated(EnumType.STRING)
     private AuthProvider provider;
 
-    @Column(name = "provider_id", nullable = false, unique = true)
+    @Column(name = "provider_id", unique = true)
     private String providerId;
 
     @CreatedDate
