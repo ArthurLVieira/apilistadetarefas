@@ -7,7 +7,8 @@ import lombok.Getter;
 public enum ErrorCode {
 
     INTERNAL_SERVER_ERROR("INT-001", "Erro interno no servidor"),
-    USER_NOT_AUTHENTICATED("USER-001", "Usuário não autenticado"),;
+    USER_NOT_AUTHENTICATED("USER-001", "Usuário não autenticado"),
+    USER_ALREADY_EXISTS("USER-002", "Usuário já cadastrado na base de dados"),;
 
     private final String code;
     private final String message;

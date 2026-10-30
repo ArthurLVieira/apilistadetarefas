@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -18,6 +19,6 @@ public class ApiResponse <T> {
     private List<ApiErroResponse> errors;
     private String message;
     private String path;
-    private String traceId;
+    private URI traceId;
     private LocalDateTime timestamp;
 }

@@ -1,5 +1,6 @@
 package com.project.apilistadetarefas.entity;
 
+import com.project.apilistadetarefas.entity.enums.AuthProvider;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -38,8 +39,9 @@ public class User implements Serializable {
 
     private String password;
 
-    @Column(nullable = false, unique = true)
-    private String provider;
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private AuthProvider provider;
 
     @Column(name = "provider_id", nullable = false, unique = true)
     private String providerId;
