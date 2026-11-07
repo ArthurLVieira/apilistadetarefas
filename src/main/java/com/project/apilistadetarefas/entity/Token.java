@@ -37,6 +37,9 @@ public class Token {
     @Column(name = "revoked", nullable = false)
     private boolean revoked = false;
 
+    @Column(name = "revoked_at")
+    private Instant revokedAt;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 

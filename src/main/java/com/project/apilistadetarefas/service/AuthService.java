@@ -12,6 +12,7 @@ import com.project.apilistadetarefas.repository.UserRepository;
 import com.project.apilistadetarefas.security.UserDatails.CustomUserDatails;
 import com.project.apilistadetarefas.security.jwt.JwtProperties;
 import com.project.apilistadetarefas.security.jwt.JwtService;
+import com.project.apilistadetarefas.security.token.ClientInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -28,28 +29,26 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final JwtProperties props;
-    private final UserRepository userRepository;
+    private final TokenService tokenService;
 
-    public AuthResponse register(RegisterRequest request) {
-        var user = repository.findByUsername(request.getEmail());
-
-        if (user.isPresent()) {
+    public AuthResponse register(RegisterRequest request, ClientInfo client) {
+        repository.findByUsername(request.getEmail()).ifPresent(user -> {
             throw new BusinessException(ErrorCode.USER_ALREADY_EXISTS);
-        }
+        });
 
-        User newUser = User.builder()
+        User entity = User.builder()
                 .name(request.getName())
                 .email(request.getEmail())
                 .password(encoder.encode(request.getPassword()))
                 .provider(AuthProvider.LOCAL)
                 .build();
 
-        newUser = repository.save(newUser);
+        entity = repository.save(entity);
 
-        return toResponse(newUser);
+        return ussueSession(entity, client);
     }
 
-    public AuthResponse login(LoginRequest request) {
+    public AuthResponse login(LoginRequest request, ClientInfo client) {
         Authentication auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(), request.getPassword())
@@ -57,27 +56,26 @@ public class AuthService {
 
         CustomUserDatails userDatails = (CustomUserDatails) auth.getPrincipal();
         assert userDatails != null;
-        return toResponse(userDatails.getUser());
+        return ussueSession(userDatails.getUser(), client);
     }
 
-    public AuthResponse refresh(RefreshTokenRequest request) {
-        String refreshToken = request.getRefreshToken();
-
-        if (!jwtService.isTokenValid(refreshToken) || !jwtService.isRefreshToken(refreshToken)) {
-            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
-        }
-
-        String username = jwtService.extractUsername(refreshToken);
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-
-        return toResponse(user);
+    public AuthResponse refresh(RefreshTokenRequest request, ClientInfo client) {
+        User user = tokenService.validateAndRotate(request.getRefreshToken());
+        return ussueSession(user, client);
     }
 
-    private AuthResponse toResponse(User user) {
+    public void logout(String refreshToken) {
+        tokenService.revoke(refreshToken);
+    }
+
+    private AuthResponse ussueSession(User user, ClientInfo client) {
+        CustomUserDatails userDatails = new CustomUserDatails(user);
+        String accessToken = jwtService.generateToken(userDatails);
+        String refreshToken = jwtService.generateRefreshToken(userDatails);
+
         return AuthResponse.builder()
-                .accessToken(jwtService.generateToken(new CustomUserDatails(user)))
-                .refreshToken(jwtService.generateRefreshToken(new CustomUserDatails(user)))
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .expiresIn(props.expiresIn())
                 .tokenType("Bearer")
                 .build();
