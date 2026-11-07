@@ -19,6 +19,6 @@ public class ApiResponse <T> {
     private List<ApiErroResponse> errors;
     private String message;
     private String path;
-    private URI traceId;
+    private String traceId;
     private LocalDateTime timestamp;
 }

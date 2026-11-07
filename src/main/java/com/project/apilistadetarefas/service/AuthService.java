@@ -1,16 +1,16 @@
 package com.project.apilistadetarefas.service;
 
 import com.project.apilistadetarefas.dto.request.LoginRequest;
+import com.project.apilistadetarefas.dto.request.RefreshTokenRequest;
 import com.project.apilistadetarefas.dto.request.RegisterRequest;
 import com.project.apilistadetarefas.dto.response.AuthResponse;
-import com.project.apilistadetarefas.dto.response.UserResponse;
 import com.project.apilistadetarefas.entity.User;
 import com.project.apilistadetarefas.entity.enums.AuthProvider;
 import com.project.apilistadetarefas.exception.enums.ErrorCode;
 import com.project.apilistadetarefas.exception.exceptions.BusinessException;
-import com.project.apilistadetarefas.mapper.UserMapper;
 import com.project.apilistadetarefas.repository.UserRepository;
 import com.project.apilistadetarefas.security.UserDatails.CustomUserDatails;
+import com.project.apilistadetarefas.security.jwt.JwtProperties;
 import com.project.apilistadetarefas.security.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,9 +27,10 @@ public class AuthService {
     private final PasswordEncoder encoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
-    private final UserMapper mapper;
+    private final JwtProperties props;
+    private final UserRepository userRepository;
 
-    public AuthResponse<UserResponse> register(RegisterRequest request) {
+    public AuthResponse register(RegisterRequest request) {
         var user = repository.findByUsername(request.getEmail());
 
         if (user.isPresent()) {
@@ -48,7 +49,7 @@ public class AuthService {
         return toResponse(newUser);
     }
 
-    public AuthResponse<UserResponse> login(LoginRequest request) {
+    public AuthResponse login(LoginRequest request) {
         Authentication auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(), request.getPassword())
@@ -59,10 +60,26 @@ public class AuthService {
         return toResponse(userDatails.getUser());
     }
 
-    private AuthResponse<UserResponse> toResponse(User user) {
-        return AuthResponse.<UserResponse>builder()
-                .token(jwtService.generateToken(new CustomUserDatails(user)))
-                .data(mapper.toDto(user))
+    public AuthResponse refresh(RefreshTokenRequest request) {
+        String refreshToken = request.getRefreshToken();
+
+        if (!jwtService.isTokenValid(refreshToken) || !jwtService.isRefreshToken(refreshToken)) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        String username = jwtService.extractUsername(refreshToken);
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        return toResponse(user);
+    }
+
+    private AuthResponse toResponse(User user) {
+        return AuthResponse.builder()
+                .accessToken(jwtService.generateToken(new CustomUserDatails(user)))
+                .refreshToken(jwtService.generateRefreshToken(new CustomUserDatails(user)))
+                .expiresIn(props.expiresIn())
+                .tokenType("Bearer")
                 .build();
     }
 }

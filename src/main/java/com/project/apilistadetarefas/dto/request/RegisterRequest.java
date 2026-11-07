@@ -19,5 +19,4 @@ public class RegisterRequest {
     @NotBlank(message = "Campo senha obrigatório para registro")
     @Size(min = 8, message = "Campo senha deve conter no mínimo 8 caracteres")
     private String password;
-
 }

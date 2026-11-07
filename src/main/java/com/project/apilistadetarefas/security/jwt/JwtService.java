@@ -13,6 +13,8 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -27,15 +29,37 @@ public class JwtService {
     }
 
     public String generateToken(CustomUserDatails userDatails) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", userDatails.getId());
+        claims.put("name",  userDatails.getName());
+        claims.put("type", "access");
+
+        return buildToken(claims, userDatails);
+    }
+
+    public String generateRefreshToken(CustomUserDatails userDatails) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", userDatails.getId());
+        claims.put("name", userDatails.getName());
+        claims.put("type", "refresh");
+
+        return buildToken(claims, userDatails);
+    }
+
+    private String buildToken(Map<String, Object> extraClaims, CustomUserDatails userDatails) {
         Instant now = Instant.now();
 
         return Jwts.builder().subject(userDatails.getUsername())
-                .claim("userId", userDatails.getId())
-                .claim("name", userDatails.getName())
-                .issuedAt(Date.from(now))
-                .expiration(Date.from(now.plusMillis(props.expirationMs())))
+                .claims(extraClaims)
+                .issuedAt(new Date())
+                .issuedAt(Date.from(Instant.now()))
+                .expiration(Date.from(now.plusMillis(props.expiresIn())))
                 .signWith(key)
                 .compact();
+    }
+
+    public boolean isRefreshToken(String token) {
+        return  "refresh".equals(parse(token).get("type", String.class));
     }
 
     public String extractUsername(String token) {
