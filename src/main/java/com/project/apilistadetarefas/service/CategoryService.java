@@ -31,6 +31,8 @@ public class CategoryService {
     public CategoryResponse insert(CategoryRequest request) {
         var entity = mapper.toEntity(request);
         validator.validateEntity(entity, null);
+
+        return mapper.toDto(repository.save(entity));
     }
 
 }

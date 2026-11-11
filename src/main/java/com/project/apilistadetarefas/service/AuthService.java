@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -49,14 +50,18 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request, ClientInfo client) {
-        Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(), request.getPassword())
-        );
+        try {
+            Authentication auth = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(), request.getPassword())
+            );
 
-        CustomUserDatails userDatails = (CustomUserDatails) auth.getPrincipal();
-        assert userDatails != null;
-        return ussueSession(userDatails.getUser(), client);
+            CustomUserDatails userDatails = (CustomUserDatails) auth.getPrincipal();
+            assert userDatails != null;
+            return ussueSession(userDatails.getUser(), client);
+        } catch (AuthenticationException e) {
+            throw new BusinessException(ErrorCode.CDT_INVALID);
+        }
     }
 
     public AuthResponse refresh(RefreshTokenRequest request, ClientInfo client) {
@@ -71,7 +76,7 @@ public class AuthService {
     private AuthResponse ussueSession(User user, ClientInfo client) {
         CustomUserDatails userDatails = new CustomUserDatails(user);
         String accessToken = jwtService.generateToken(userDatails);
-        String refreshToken = jwtService.generateRefreshToken(userDatails);
+        String refreshToken = tokenService.issueRefreshToken(userDatails.getUser(), client);
 
         return AuthResponse.builder()
                 .accessToken(accessToken)
