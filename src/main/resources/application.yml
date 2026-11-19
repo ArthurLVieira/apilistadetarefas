@@ -1,0 +1,32 @@
+server:
+  port: 8080
+
+logging:
+  level:
+#    org.springframework.security: DEBUG
+    org.springframework.security.oauth2.client: TRACE
+
+
+spring:
+  application:
+    name: apilistadetarefas
+  profiles:
+    active: conn
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - email
+              - profile
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+
+app:
+  jwt:
+    secret: ${8a815f8e69e08645781f0f4579fe58750d3551b238385bb1e558b9d46cd33831}
+    expiresIn: 86400000
+  oauth2:
+    redirect-uri: http://localhost:8080/login/oauth2/code/google
