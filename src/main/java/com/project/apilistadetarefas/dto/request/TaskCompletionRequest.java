@@ -4,5 +4,5 @@ import jakarta.validation.constraints.NotNull;
 
 public record TaskCompletionRequest(
     @NotNull(message = "Campo 'completed' é obrigatório")
-    boolean completed
+    Boolean completed
 ) {}

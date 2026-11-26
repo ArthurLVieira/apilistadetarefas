@@ -56,7 +56,7 @@ public class TaskController implements Generic {
     @PatchMapping("/{id}/completion")
     public ResponseEntity<TaskResponse> setComplete(
             @PathVariable Long id,
-            @RequestParam TaskCompletionRequest request
+            @Valid @RequestBody TaskCompletionRequest request
     ) {
         TaskResponse entity = taskService.setCompletion(id, request.completed());
 
