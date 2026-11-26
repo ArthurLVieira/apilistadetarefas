@@ -41,6 +41,17 @@ public class SecurityConfig {
     private final RestAccessDeniedHandler accessDeniedHandler;
 
     @Bean
+    @Order(0)
+    public SecurityFilterChain actuatorChain(HttpSecurity http) throws Exception {
+        http
+                .securityMatcher("/actuator/**")
+                .authorizeHttpRequests(a -> a.anyRequest().permitAll())
+                .csrf(CsrfConfigurer::disable);
+
+        return http.build();
+    }
+
+    @Bean
     @Order(1)
     public SecurityFilterChain oauth2Chain(HttpSecurity http) throws Exception {
         http

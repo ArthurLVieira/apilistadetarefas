@@ -11,21 +11,24 @@ import org.springframework.stereotype.Component;
 @Component
 public class CurrentUser {
 
-    public CustomUserDatails userDatails() {
+    public CustomUserDatails getCustomUserDatails() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        if (auth != null || !(auth.getPrincipal() instanceof CustomUserDatails user)) {
+        if (auth == null || !(auth.getPrincipal() instanceof CustomUserDatails userDatails)) {
             throw new BusinessException(ErrorCode.USER_NOT_AUTHENTICATED);
         }
 
-        return (CustomUserDatails)user;
+        return  userDatails;
     }
 
-    public User entity() {
-        return userDatails().getUser();
+    public User getUser() {
+        return getCustomUserDatails().getUser();
+    }
+    public Long getUserId() {
+        return getCustomUserDatails().getUser().getId();
     }
 
-    public Long id() {
-        return userDatails().getId();
+    public String getEmail() {
+        return getCustomUserDatails().getUser().getEmail();
     }
 }

@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/taks")
+@RequestMapping("/api/tasks")
 @RequiredArgsConstructor
 public class TaskController implements Generic {
 
@@ -27,7 +27,7 @@ public class TaskController implements Generic {
 
     @GetMapping
     public ResponseEntity<List<TaskResponse>> findAll(
-            @RequestParam(required = true) Boolean complet
+            @RequestParam(required = false) Boolean complet
     ) {
         List<TaskResponse> entities = taskService.findAll(complet);
 

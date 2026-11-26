@@ -1,13 +1,14 @@
 server:
   port: 8080
 
-logging:
-  level:
+#logging:
+#  level:
 #    org.springframework.security: DEBUG
-    org.springframework.security.oauth2.client: TRACE
-
+#    org.springframework.security.oauth2.client: TRACE
 
 spring:
+  config:
+    import: optional:file:.env[.properties]
   application:
     name: apilistadetarefas
   profiles:
@@ -23,6 +24,17 @@ spring:
               - email
               - profile
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
 
 app:
   jwt:

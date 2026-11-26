@@ -4,8 +4,7 @@ import com.project.apilistadetarefas.entity.Priority;
 import com.project.apilistadetarefas.entity.enums.PriorityEnum;
 import com.project.apilistadetarefas.repository.PriorityRepository;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -15,28 +14,29 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 @Component
-@Order(value = 1)
+@Order(1)
 @RequiredArgsConstructor
 public class PriorityInitializerConfig implements CommandLineRunner {
 
     private final PriorityRepository priorityRepository;
 
-    private static final Logger log = LoggerFactory.getLogger(PriorityInitializerConfig.class);
-    private static final Map<PriorityEnum, Seed> SEEDS = new HashMap<>();
+    private static final Map<PriorityEnum, Seed> SEEDS = buildSeeds();
 
-    private static final Map<PriorityEnum, Seed> buildSeeds() {
+    private static Map<PriorityEnum, Seed> buildSeeds() {
         Map<PriorityEnum, Seed> map = new EnumMap<>(PriorityEnum.class);
-        map.put(PriorityEnum.LOW,    new Seed("#10B981", 1));   // verde
-        map.put(PriorityEnum.MEDIUM, new Seed("#F59E0B", 2));   // âmbar
-        map.put(PriorityEnum.HIGH,   new Seed("#F97316", 3));   // laranja
-        map.put(PriorityEnum.URGENT, new Seed("#EF4444", 4));
-
+        map.put(PriorityEnum.LOW,    new Seed("#10B981", 1));  // verde
+        map.put(PriorityEnum.MEDIUM, new Seed("#F59E0B", 2));  // âmbar
+        map.put(PriorityEnum.HIGH,   new Seed("#F97316", 3));  // laranja
+        map.put(PriorityEnum.URGENT, new Seed("#EF4444", 4));  // vermelho
         return Map.copyOf(map);
     }
 
     @Override
     public void run(String... args) throws Exception {
+        log.info("Priority initializer: iniciando sincronização ({} prioridades no enum)", SEEDS.size());
+
         int created = 0;
         int updated = 0;
         int skipped = 0;
@@ -47,7 +47,7 @@ public class PriorityInitializerConfig implements CommandLineRunner {
 
             Optional<Priority> existing = priorityRepository.findByName(name);
 
-            if (existing.isPresent()) {
+            if (existing.isEmpty()) {
                 priorityRepository.save(Priority.builder()
                         .name(name)
                         .color(seed.color)
@@ -64,12 +64,16 @@ public class PriorityInitializerConfig implements CommandLineRunner {
             boolean orderChanged = priority.getDisplayOrder() != seed.displayOrder;
 
             if (colorChanged || orderChanged) {
-                priority.setColor(seed.color);
-                priority.setDisplayOrder(seed.displayOrder);
+                if (colorChanged) {
+                    log.debug("Priority {} — cor: {} → {}", name, priority.getColor(), seed.color());
+                    priority.setColor(seed.color());
+                }
+                if (orderChanged) {
+                    log.debug("Priority {} — ordem: {} → {}", name, priority.getDisplayOrder(), seed.displayOrder());
+                    priority.setDisplayOrder(seed.displayOrder());
+                }
                 priorityRepository.save(priority);
                 updated++;
-                log.debug("Priority atualizada: {} ({})", name, seed.color);
-                continue;
             } else {
                 skipped++;
             }
@@ -79,7 +83,7 @@ public class PriorityInitializerConfig implements CommandLineRunner {
             log.info("Priority initializer: {} criada(s), {} atualizada(s), {} sem alteração",
                     created, updated, skipped);
         } else {
-            log.debug("Priority initializer: seed em sincronia ({} registros)", skipped);
+            log.info("Priority initializer: seed em sincronia ({} registros)", skipped);
         }
     }
 

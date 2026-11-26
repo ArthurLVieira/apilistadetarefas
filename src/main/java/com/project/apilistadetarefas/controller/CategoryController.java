@@ -4,6 +4,7 @@ import com.project.apilistadetarefas.controller.generics.Generic;
 import com.project.apilistadetarefas.dto.request.CategoryRequest;
 import com.project.apilistadetarefas.dto.response.CategoryResponse;
 import com.project.apilistadetarefas.service.CategoryService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +22,9 @@ public class CategoryController implements Generic {
         return ResponseEntity.ok().body(service.findAll());
     }
     @GetMapping("{id}")
-    public ResponseEntity<CategoryResponse> getCategoryById(@PathVariable Long id) {
+    public ResponseEntity<CategoryResponse> getCategoryById(
+            @Valid @PathVariable Long id
+    ) {
         return ResponseEntity.ok().body(service.findById(id));
     }
 
@@ -46,6 +49,7 @@ public class CategoryController implements Generic {
     public ResponseEntity<Void> deleteCategory(
             @PathVariable Long id
     ) {
+        service.deleteById(id);
         return ResponseEntity.ok().build();
     }
 }

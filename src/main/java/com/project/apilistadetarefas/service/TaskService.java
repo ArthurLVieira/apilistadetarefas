@@ -6,15 +6,14 @@ import com.project.apilistadetarefas.dto.response.TaskResponse;
 import com.project.apilistadetarefas.entity.Category;
 import com.project.apilistadetarefas.entity.Priority;
 import com.project.apilistadetarefas.entity.Task;
-import com.project.apilistadetarefas.entity.User;
 import com.project.apilistadetarefas.exception.enums.ErrorCode;
 import com.project.apilistadetarefas.exception.exceptions.BusinessException;
 import com.project.apilistadetarefas.mapper.TaskMapper;
 import com.project.apilistadetarefas.repository.CategoryRepository;
 import com.project.apilistadetarefas.repository.TaskRepository;
 import com.project.apilistadetarefas.repository.UserRepository;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import com.project.apilistadetarefas.security.utils.CurrentUser;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,38 +24,14 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class TaskService {
 
     private final TaskRepository taskRepository;
     private final CategoryRepository categoryRepository;
-    private final UserRepository userRepository;
     private final PriorityService priorityService;
     private final TaskMapper taskMapper;
-
-    public TaskService(
-            TaskRepository taskRepository,
-            CategoryRepository categoryRepository,
-            UserRepository userRepository,
-            PriorityService priorityService,
-            TaskMapper taskMapper
-    ) {
-        this.taskRepository = taskRepository;
-        this.categoryRepository = categoryRepository;
-        this.userRepository = userRepository;
-        this.priorityService = priorityService;
-        this.taskMapper = taskMapper;
-    }
-
-    private User getUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        assert authentication != null;
-
-        User user = (User) authentication.getPrincipal();
-        assert user != null;
-
-        return userRepository.findById(user.getId()).orElseThrow(() ->
-                new BusinessException(ErrorCode.USER_NOT_FOUND));
-    }
+    private final CurrentUser currentUser;
 
     @Transactional(readOnly = true)
     public TaskResponse findById(Long id) {
@@ -67,10 +42,10 @@ public class TaskService {
         Priority priority = resolvePriority(request.priorityId());
         Category category = resolveCategory(request.categoryId());
 
-        int nextPosition = taskRepository.maxPositionByUser(getUser()) + 1;
+        int nextPosition = taskRepository.maxPositionByUser(currentUser.getUser()) + 1;
 
         Task task = Task.builder()
-                .user(getUser())
+                .user(currentUser.getUser())
                 .category(category)
                 .priority(priority)
                 .title(request.title())
@@ -86,8 +61,8 @@ public class TaskService {
     @Transactional(readOnly = true)
     public List<TaskResponse> findAll(Boolean completed) {
         List<Task> tasks = (completed == null)
-                ? taskRepository.findAllByUserWithRelations(getUser())
-                : taskRepository.findByUserAndCompletedWithRelations(getUser(), completed);
+                ? taskRepository.findAllByUserWithRelations(currentUser.getUser())
+                : taskRepository.findByUserAndCompletedWithRelations(currentUser.getUser(), completed);
 
         return tasks.stream().map(taskMapper::toResponse).collect(Collectors.toList());
     }
@@ -124,7 +99,7 @@ public class TaskService {
                 .map(TaskReorderRequest.TaskOrderItem::id)
                 .toList();
 
-        List<Task> owned = taskRepository.findAllByIdAndUser(ids, getUser());
+        List<Task> owned = taskRepository.findAllByIdAndUser(ids, currentUser.getUser());
         if (owned.size() != ids.size()) {
             throw new BusinessException(ErrorCode.TASK_NOT_FOUND);
         }
@@ -143,7 +118,7 @@ public class TaskService {
     }
 
     private Task getOwnedOrThrow(Long id) {
-        return taskRepository.findByIdAndUser(id, getUser()).orElseThrow(() ->
+        return taskRepository.findByIdAndUser(id, currentUser.getUser()).orElseThrow(() ->
                 new BusinessException(ErrorCode.TASK_NOT_FOUND));
     }
 
@@ -155,7 +130,7 @@ public class TaskService {
 
     private Category resolveCategory(Long categoryId) {
         if (categoryId == null) return null;
-        return categoryRepository.findByIdAndUser(categoryId, getUser())
+        return categoryRepository.findByIdAndUser(categoryId, currentUser.getUser())
                 .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
     }
 
