@@ -78,6 +78,9 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/users/password-reset/request",
+                                "/api/users/password-reset/confirm").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/priorities").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(exceptionHandlingConfigurer -> exceptionHandlingConfigurer

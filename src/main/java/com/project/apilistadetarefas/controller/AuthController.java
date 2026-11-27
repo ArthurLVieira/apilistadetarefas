@@ -9,6 +9,8 @@ import com.project.apilistadetarefas.dto.response.AuthResponse;
 import com.project.apilistadetarefas.dto.response.UserResponse;
 import com.project.apilistadetarefas.security.token.ClientInfo;
 import com.project.apilistadetarefas.service.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,11 +27,13 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Tag(name = "Autenticação", description = "Cadastro, autenticação e renovação de tokens.")
 public class AuthController implements Generic {
 
     private final AuthService authService;
 
     @PostMapping("/register")
+    @Operation(summary = "Registrar usuário")
     public ResponseEntity<AuthResponse> register(
             @Valid @RequestBody RegisterRequest request,
             HttpServletRequest httpRequest
@@ -40,6 +44,7 @@ public class AuthController implements Generic {
     }
 
     @PostMapping("/login")
+    @Operation(summary = "Autenticar usuário")
     public ResponseEntity<AuthResponse> login(
             @RequestBody @Valid LoginRequest request,
             HttpServletRequest httpRequest
@@ -50,6 +55,7 @@ public class AuthController implements Generic {
     }
 
     @PostMapping("/refresh")
+    @Operation(summary = "Renovar tokens de acesso")
     public ResponseEntity<AuthResponse> refresh(
             @RequestBody @Valid RefreshTokenRequest request,
             HttpServletRequest httpRequest

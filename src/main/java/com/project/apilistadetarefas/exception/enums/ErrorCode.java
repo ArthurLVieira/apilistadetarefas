@@ -11,6 +11,8 @@ public enum ErrorCode {
     USER_NOT_AUTHENTICATED("USER-001", "Usuário não autenticado"),
     USER_ALREADY_EXISTS("USER-002", "Usuário já cadastrado na base de dados"),
     USER_INVALID_EMAIL_OR_PASSWORD("USER-003", "E-mail ou senha inválidos."),
+    USER_INVALID_CURRENT_PASSWORD("USER-004", "A senha atual está incorreta."),
+    USER_INVALID_PASSWORD_RESET_CODE("USER-005", "Código de recuperação inválido ou expirado."),
     CATEGORY_NOT_FOUND("CAT-001", "Categoria não encontrada"),
     CATEGORY_ALREADY_EXISTS("CAT-002", "Categoria já cadastrado na base de dados"),
     CATEGORY_NAME_ALREADY_EXISTS("CAT-003", "Categoria com mesmo nome já cadastrada no base de dados"),

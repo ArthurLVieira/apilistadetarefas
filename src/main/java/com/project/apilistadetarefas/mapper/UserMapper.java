@@ -1,5 +1,6 @@
 package com.project.apilistadetarefas.mapper;
 
+import com.project.apilistadetarefas.dto.request.PerfilRequest;
 import com.project.apilistadetarefas.dto.request.UserRequest;
 import com.project.apilistadetarefas.dto.response.UserResponse;
 import com.project.apilistadetarefas.entity.User;
