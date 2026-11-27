@@ -45,6 +45,7 @@ public class SecurityConfig {
     public SecurityFilterChain actuatorChain(HttpSecurity http) throws Exception {
         http
                 .securityMatcher("/actuator/**")
+                .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(a -> a.anyRequest().permitAll())
                 .csrf(CsrfConfigurer::disable);
 
