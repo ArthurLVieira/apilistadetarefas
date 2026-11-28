@@ -14,6 +14,9 @@ import java.time.LocalDateTime;
 @Table(
         name = "category",
         schema = "public",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_category_user_name", columnNames = {"user_id", "name"})
+        },
         indexes = {
                 @Index(name = "idx_category_user", columnList = "user_id")
         }
@@ -34,12 +37,12 @@ public class Category implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String name;
 
     private String description;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String color;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

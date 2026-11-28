@@ -25,6 +25,10 @@ public interface CategoryRepository extends JpaRepository<Category,Long> {
     """)
     boolean existsByUserAndNameIgnoreCase(User user, String name);
 
+    boolean existsByUserAndColorIgnoreCase(User user, String color);
+
+    boolean existsByUserAndColorIgnoreCaseAndIdNot(User user, String color, Long id);
+
     Optional<Category> findByNameAndColorAndUser(String name, String color, User user);
 
     Optional<Category> findByNameAndUser(String name, User user);

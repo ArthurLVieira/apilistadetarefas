@@ -3,6 +3,7 @@ package com.project.apilistadetarefas.service;
 import com.project.apilistadetarefas.dto.request.CategoryRequest;
 import com.project.apilistadetarefas.dto.response.CategoryResponse;
 import com.project.apilistadetarefas.entity.Category;
+import com.project.apilistadetarefas.entity.User;
 import com.project.apilistadetarefas.exception.enums.ErrorCode;
 import com.project.apilistadetarefas.exception.exceptions.BusinessException;
 import com.project.apilistadetarefas.mapper.CategoryMapper;
@@ -25,7 +26,7 @@ public class CategoryService {
     private final CategoryRepository repository;
     private final CategoryMapper mapper;
     private final CurrentUser currentUser;
-    private TaskRepository taskRepository;
+    private final TaskRepository taskRepository;
 
     @Transactional(readOnly = true)
     public List<CategoryResponse> findAll() {
@@ -41,18 +42,24 @@ public class CategoryService {
     }
 
     public CategoryResponse insert(CategoryRequest request) {
-        if (repository.countByUser(currentUser.getUser()) > MAX_CATEGORIES_PER_USER) {
+        User user = currentUser.getUser();
+        if (repository.countByUser(user) > MAX_CATEGORIES_PER_USER) {
             throw new BusinessException(ErrorCode.CATEGORY_LIMIT_REACHED);
         }
 
         String normalizedName = request.getName().trim();
 
-        if (repository.existsByUserAndNameIgnoreCase(currentUser.getUser(), normalizedName)) {
+        if (repository.existsByUserAndNameIgnoreCase(user, normalizedName)) {
             throw new BusinessException(ErrorCode.CATEGORY_ALREADY_EXISTS);
         }
 
+        String normalizedColor = normalizeColor(request.getColor());
+        if (repository.existsByUserAndColorIgnoreCase(user, normalizedColor)) {
+            throw new BusinessException(ErrorCode.CATEGORY_COLOR_ALREADY_EXISTS);
+        }
+
         Category entity = mapper.toEntity(request);
-        entity.setUser(currentUser.getUser());
+        entity.setUser(user);
 
         return mapper.toDto(repository.save(entity));
     }
@@ -66,10 +73,16 @@ public class CategoryService {
             throw new BusinessException(ErrorCode.CATEGORY_ALREADY_EXISTS);
         }
 
+        String normalizedColor = normalizeColor(request.getColor());
+        if (repository.existsByUserAndColorIgnoreCaseAndIdNot(currentUser.getUser(), normalizedColor, id)) {
+            throw new BusinessException(ErrorCode.CATEGORY_COLOR_ALREADY_EXISTS);
+        }
+
         mapper.applayTo(entity, request);
         return mapper.toDto(repository.save(entity));
     }
 
+    @Transactional
     public void deleteById(Long id) {
         Category entity = getOwnerOrThrow(id);
         taskRepository.clearCategory(entity);
@@ -80,6 +93,10 @@ public class CategoryService {
         return repository.findByIdAndUser(id, currentUser.getUser())
                 .orElseThrow(() ->
                         new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
+    }
+
+    private String normalizeColor(String color) {
+        return color == null ? null : color.trim();
     }
 
 }

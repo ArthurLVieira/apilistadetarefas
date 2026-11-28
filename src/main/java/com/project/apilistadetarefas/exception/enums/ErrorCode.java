@@ -17,6 +17,7 @@ public enum ErrorCode {
     CATEGORY_ALREADY_EXISTS("CAT-002", "Categoria já cadastrado na base de dados"),
     CATEGORY_NAME_ALREADY_EXISTS("CAT-003", "Categoria com mesmo nome já cadastrada no base de dados"),
     CATEGORY_LIMIT_REACHED("CAT-004", "Você atingiu o limite de categorias."),
+    CATEGORY_COLOR_ALREADY_EXISTS("CAT-005", "Cor já utilizada por outra categoria deste usuário."),
     TOKEN_INVALID("TKN-001", "Refresh token invalido"),
     TOKEN_INVALID_SESSION("TKN-002", "Sessão inválida. Faça login novamente."),
     PRIORITY_NOT_FOUNT("PRY-001", "Prioridade não encontrada"),
